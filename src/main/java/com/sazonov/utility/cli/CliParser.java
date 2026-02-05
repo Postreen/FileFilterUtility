@@ -1,0 +1,83 @@
+package com.sazonov.utility.cli;
+
+import com.sazonov.utility.config.Configuration;
+import com.sazonov.utility.model.StatisticsMode;
+import org.apache.commons.cli.*;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+
+public class CliParser {
+    private static final String OPTION_OUTPUT = "o";
+    private static final String OPTION_PREFIX = "p";
+    private static final String OPTION_APPEND = "a";
+    private static final String OPTION_SUMMARY = "s";
+    private static final String OPTION_FULL = "f";
+
+    private final Options options;
+
+    public CliParser() {
+        options = new Options();
+        options.addOption(Option.builder(OPTION_OUTPUT)
+                .longOpt("output")
+                .hasArg()
+                .argName("dir")
+                .desc("Output directory for result files (default: current directory)")
+                .build());
+        options.addOption(Option.builder(OPTION_PREFIX)
+                .longOpt("prefix")
+                .hasArg()
+                .argName("value")
+                .desc("Prefix for output file names")
+                .build());
+        options.addOption(Option.builder(OPTION_APPEND)
+                .longOpt("append")
+                .desc("Append to existing output files")
+                .build());
+        options.addOption(Option.builder(OPTION_SUMMARY)
+                .longOpt("summary")
+                .desc("Print summary statistics")
+                .build());
+        options.addOption(Option.builder(OPTION_FULL)
+                .longOpt("full")
+                .desc("Print full statistics")
+                .build());
+    }
+
+    public Optional<Configuration> parse(String[] args) {
+        Locale.setDefault(Locale.ROOT);
+        CommandLineParser parser = new DefaultParser();
+        try {
+            CommandLine cmd = parser.parse(options, args);
+            Path outputDirectory = Paths.get(cmd.getOptionValue(OPTION_OUTPUT, "."));
+            String prefix = cmd.getOptionValue(OPTION_PREFIX, "");
+            boolean append = cmd.hasOption(OPTION_APPEND);
+            StatisticsMode statisticsMode = resolveStatisticsMode(cmd);
+            List<Path> inputs = new ArrayList<>();
+            for (String input : cmd.getArgList()) {
+                inputs.add(Paths.get(input));
+            }
+            return Optional.of(new Configuration(outputDirectory, prefix, append, statisticsMode, inputs));
+        } catch (ParseException e) {
+            printHelp();
+            return Optional.empty();
+        }
+    }
+
+    public void printHelp() {
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp("java -jar <jar> [options] <files...>", options);
+    }
+
+    private StatisticsMode resolveStatisticsMode(CommandLine cmd) {
+        return Optional.ofNullable(cmd.getOptionValue(OPTION_FULL))
+                .map(option -> StatisticsMode.FULL)
+                .orElse(Optional.ofNullable(cmd.getOptionValue(OPTION_SUMMARY))
+                        .map(option -> StatisticsMode.SUMMARY)
+                        .orElse(StatisticsMode.NONE));
+    }
+}

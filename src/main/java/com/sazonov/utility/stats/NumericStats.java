@@ -1,0 +1,32 @@
+package com.sazonov.utility.stats;
+
+import lombok.Getter;
+
+import java.math.BigDecimal;
+import java.math.MathContext;
+
+@Getter
+public final class NumericStats {
+    private long count;
+    private BigDecimal min = BigDecimal.valueOf(Double.MAX_VALUE);
+    private BigDecimal max = BigDecimal.valueOf(Double.MIN_VALUE);
+    private BigDecimal sum = BigDecimal.ZERO;
+
+    public void record(BigDecimal value) {
+        count++;
+        if (min == null || value.compareTo(min) < 0) {
+            min = value;
+        }
+        if (max == null || value.compareTo(max) > 0) {
+            max = value;
+        }
+        sum = sum.add(value);
+    }
+
+    public BigDecimal average() {
+        if (count == 0) {
+            return BigDecimal.ZERO;
+        }
+        return sum.divide(BigDecimal.valueOf(count), MathContext.DECIMAL128);
+    }
+}

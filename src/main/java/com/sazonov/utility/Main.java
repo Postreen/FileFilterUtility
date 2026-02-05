@@ -1,61 +1,52 @@
 package com.sazonov.utility;
 
+import com.sazonov.utility.cli.CliParser;
+import com.sazonov.utility.config.Configuration;
 import com.sazonov.utility.manager.FileOutputManager;
+import com.sazonov.utility.processor.FileFilterProcessor;
+import com.sazonov.utility.stats.StatsPresenter;
+import com.sazonov.utility.stats.StatsTracker;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
+import java.util.Optional;
 
 public class Main {
     public static void main(String[] args) {
-
-        if (args.length == 0) {
-            System.err.println("No input files provided.");
+        CliParser cliParser = new CliParser();
+        Optional<Configuration> configOptional = cliParser.parse(args);
+        if (configOptional.isEmpty()) {
             return;
         }
 
-        FileOutputManager outputManager = new FileOutputManager();
+        Configuration config = configOptional.get();
+        if (config.inputFiles().isEmpty()) {
+            cliParser.printHelp();
+            return;
+        }
 
-        processFiles(List.of(args), outputManager);
+        if (!ensureOutputDirectory(config.outputDirectory())) {
+            return;
+        }
 
+        FileOutputManager outputManager = new FileOutputManager(config);
+        StatsTracker statsTracker = new StatsTracker();
+        FileFilterProcessor processor = new FileFilterProcessor(outputManager, statsTracker);
+        processor.process(config.inputFiles());
         outputManager.closeAll();
+
+        StatsPresenter presenter = new StatsPresenter(config.statisticsMode());
+        presenter.print(statsTracker);
     }
 
-    private static void processFiles(List<String> inputFiles, FileOutputManager outputManager) {
-        for (String filePath : inputFiles) {
-            Path inputFile = Path.of(filePath);
-            if (!Files.exists(inputFile)) {
-                System.err.println("Input file not found: " + inputFile);
-                continue;
-            }
-            if (!Files.isReadable(inputFile)) {
-                System.err.println("Input file is not readable: " + inputFile);
-                continue;
-            }
-
-            try {
-                Files.lines(inputFile).forEach(line -> {
-                    processLine(line, outputManager);
-                });
-            } catch (IOException e) {
-                System.err.println("Failed to read file " + inputFile + ": " + e.getMessage());
-            }
-        }
-    }
-
-    private static void processLine(String line, FileOutputManager outputManager) {
-        line = line.trim();
-        if (line.isEmpty()) {
-            return;
-        }
-
-        if (line.matches("[+-]?\\d+")) {
-            outputManager.writeInteger(line);
-        } else if (line.matches("[+-]?\\d*\\.\\d+([eE][+-]?\\d+)?")) {
-            outputManager.writeFloat(line);
-        } else {
-            outputManager.writeString(line);
+    private static boolean ensureOutputDirectory(Path outputDirectory) {
+        try {
+            Files.createDirectories(outputDirectory);
+            return true;
+        } catch (IOException e) {
+            System.err.println(e);
+            return false;
         }
     }
 }
