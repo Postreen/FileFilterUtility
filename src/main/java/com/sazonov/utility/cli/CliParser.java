@@ -88,10 +88,15 @@ public class CliParser {
     }
 
     private StatisticsMode resolveStatisticsMode(CommandLine cmd) {
-        return Optional.ofNullable(cmd.getOptionValue(OPTION_FULL))
-                .map(option -> StatisticsMode.FULL)
-                .orElse(Optional.ofNullable(cmd.getOptionValue(OPTION_SUMMARY))
-                        .map(option -> StatisticsMode.SUMMARY)
-                        .orElse(StatisticsMode.NONE));
+        if (cmd.hasOption(OPTION_FULL)) {
+            log.info("Full statistics requested.");
+            return StatisticsMode.FULL;
+        } else if (cmd.hasOption(OPTION_SUMMARY)) {
+            log.info("Summary statistics requested.");
+            return StatisticsMode.SUMMARY;
+        } else {
+            log.info("No statistics mode selected.");
+            return StatisticsMode.NONE;
+        }
     }
 }

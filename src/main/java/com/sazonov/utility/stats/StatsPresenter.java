@@ -6,40 +6,65 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-public final class StatsPresenter {
-    private final StatisticsMode mode;
+public class StatsPresenter {
+    private final StatisticsMode statisticsMode;
 
-    public void print(StatsTracker stats) {
-        if (mode == StatisticsMode.NONE) {
+    public void print(StatsTracker statsTracker) {
+        if (statisticsMode == StatisticsMode.NONE) {
             log.info("Statistics are not printed because the mode is set to NONE.");
             return;
         }
-        printNumeric("Integers", stats.getIntegerStats());
-        printNumeric("Floats", stats.getFloatStats());
-        printStrings(stats.getStringStats());
-    }
 
-    private void printNumeric(String title, NumericStats stats) {
-        log.info("{}:", title);
-        log.info("  count: {}", stats.getCount());
-        if (mode == StatisticsMode.FULL && stats.getCount() > 0) {
-            log.info("  min: {}", stats.getMin());
-            log.info("  max: {}", stats.getMax());
-            log.info("  sum: {}", stats.getSum());
-            log.info("  average: {}", stats.average());
-        } else if (mode == StatisticsMode.FULL) {
-            log.info("  no data");
+        if (statisticsMode == StatisticsMode.FULL) {
+            printFullStats("Integers", statsTracker.getIntegerStats());
+            printFullStats("Floats", statsTracker.getFloatStats());
+            printFullStringStats("Strings", statsTracker.getStringStats());
+        } else if (statisticsMode == StatisticsMode.SUMMARY) {
+            printSummaryStats("Integers", statsTracker.getIntegerStats());
+            printSummaryStats("Floats", statsTracker.getFloatStats());
+            printSummaryStringStats("Strings", statsTracker.getStringStats());
         }
     }
 
-    private void printStrings(StringStats stats) {
-        log.info("Strings:");
-        log.info("  count: {}", stats.getCount());
-        if (mode == StatisticsMode.FULL && stats.getCount() > 0) {
-            log.info("  min length: {}", stats.getMinLength());
-            log.info("  max length: {}", stats.getMaxLength());
-        } else if (mode == StatisticsMode.FULL) {
-            log.info("  no data");
-        }
+    /**
+     * Полная статистика для чисел
+     */
+    private void printFullStats(String label, NumericStats stats) {
+        log.info("""
+                {}:
+                - Min: {}
+                - Max: {}
+                - Average: {}
+                - Sum: {}
+                - Count: {}
+                """, label, stats.getMin(), stats.getMax(), stats.average(), stats.getSum(), stats.getCount());
+    }
+
+    /**
+     * Краткая статистика для чисел
+     */
+    private void printSummaryStats(String label, NumericStats stats) {
+        log.info("{}:", label);
+        log.info("- Count: {}", stats.getCount());
+    }
+
+    /**
+     * Полная статистика для строк
+     */
+    private void printFullStringStats(String label, StringStats stats) {
+        log.info("""
+                {}:
+                - Min length: {}
+                - Max length: {}
+                - Count: {}
+                """, label, stats.getMinLength(), stats.getMaxLength(), stats.getCount());
+    }
+
+    /**
+     * Краткая статистика для строк
+     */
+    private void printSummaryStringStats(String label, StringStats stats) {
+        log.info("{}:", label);
+        log.info("- Count: {}", stats.getCount());
     }
 }
