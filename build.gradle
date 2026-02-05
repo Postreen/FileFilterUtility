@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'application'
+    id 'com.github.johnrengelman.shadow' version '7.0.0'
 }
 
 group = 'com.sazonov'
@@ -24,11 +25,11 @@ ext {
     lombokVersion = '1.18.38'
     logbackVersion = '1.5.25'
     junitVersion = '5.10.0'
-    commonsCliVersion = '1.5.0'
+    commonsCliVersion = '1.9.0'
 }
 
 dependencies {
-    implementation "org.apache.commons:commons-cli:$commonsCliVersion"
+    implementation "commons-cli:commons-cli:${commonsCliVersion}"
 
     implementation "ch.qos.logback:logback-classic:${logbackVersion}"
     implementation "ch.qos.logback:logback-core:${logbackVersion}"
@@ -41,6 +42,16 @@ dependencies {
 
     testImplementation platform("org.junit:junit-bom:$junitVersion")
     testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+shadowJar {
+    archiveBaseName.set('FileFilterUtility')
+    archiveVersion.set('1.0-SNAPSHOT')
+    manifest {
+        attributes(
+                'Main-Class': 'com.sazonov.utility.Main'
+        )
+    }
 }
 
 test {

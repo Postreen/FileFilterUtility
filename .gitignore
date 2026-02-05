@@ -48,3 +48,8 @@ Thumbs.db
 
 # Логи
 *.log
+
+
+# .txt
+/*
+!/src/main/resources/*.txt
