@@ -2,13 +2,16 @@ package com.sazonov.utility.stats;
 
 import com.sazonov.utility.model.StatisticsMode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RequiredArgsConstructor
 public final class StatsPresenter {
     private final StatisticsMode mode;
 
     public void print(StatsTracker stats) {
         if (mode == StatisticsMode.NONE) {
+            log.info("Statistics are not printed because the mode is set to NONE.");
             return;
         }
         printNumeric("Integers", stats.getIntegerStats());
@@ -17,26 +20,26 @@ public final class StatsPresenter {
     }
 
     private void printNumeric(String title, NumericStats stats) {
-        System.out.println(title + ":");
-        System.out.println("  count: " + stats.getCount());
+        log.info("{}:", title);
+        log.info("  count: {}", stats.getCount());
         if (mode == StatisticsMode.FULL && stats.getCount() > 0) {
-            System.out.println("  min: " + stats.getMin());
-            System.out.println("  max: " + stats.getMax());
-            System.out.println("  sum: " + stats.getSum());
-            System.out.println("  average: " + stats.average());
+            log.info("  min: {}", stats.getMin());
+            log.info("  max: {}", stats.getMax());
+            log.info("  sum: {}", stats.getSum());
+            log.info("  average: {}", stats.average());
         } else if (mode == StatisticsMode.FULL) {
-            System.out.println("  no data");
+            log.info("  no data");
         }
     }
 
     private void printStrings(StringStats stats) {
-        System.out.println("Strings:");
-        System.out.println("  count: " + stats.getCount());
+        log.info("Strings:");
+        log.info("  count: {}", stats.getCount());
         if (mode == StatisticsMode.FULL && stats.getCount() > 0) {
-            System.out.println("  min length: " + stats.getMinLength());
-            System.out.println("  max length: " + stats.getMaxLength());
+            log.info("  min length: {}", stats.getMinLength());
+            log.info("  max length: {}", stats.getMaxLength());
         } else if (mode == StatisticsMode.FULL) {
-            System.out.println("  no data");
+            log.info("  no data");
         }
     }
 }

@@ -23,7 +23,6 @@ application {
 
 ext {
     lombokVersion = '1.18.38'
-    logbackVersion = '1.5.25'
     junitVersion = '5.10.0'
     commonsCliVersion = '1.9.0'
 }
@@ -31,8 +30,7 @@ ext {
 dependencies {
     implementation "commons-cli:commons-cli:${commonsCliVersion}"
 
-    implementation "ch.qos.logback:logback-classic:${logbackVersion}"
-    implementation "ch.qos.logback:logback-core:${logbackVersion}"
+    implementation 'ch.qos.logback:logback-classic:1.5.27'
 
     compileOnly "org.projectlombok:lombok:$lombokVersion"
     annotationProcessor "org.projectlombok:lombok:$lombokVersion"
