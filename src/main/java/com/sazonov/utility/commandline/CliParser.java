@@ -1,7 +1,8 @@
-package com.sazonov.utility.cli;
+package com.sazonov.utility.commandline;
 
 import com.sazonov.utility.config.Configuration;
 import com.sazonov.utility.model.StatisticsMode;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
 
@@ -13,6 +14,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 @Slf4j
+@RequiredArgsConstructor
 public class CliParser {
     private static final String OPTION_OUTPUT = "o";
     private static final String OPTION_PREFIX = "p";
