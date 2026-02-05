@@ -5,12 +5,8 @@ import com.sazonov.utility.service.ServiceFactory;
 
 public class Main {
     public static void main(String[] args) {
-        FileProcessingService fileProcessingService = ServiceFactory.createFileProcessingService(args);
+        FileProcessingService fileProcessingService = ServiceFactory.createFileProcessingService();
 
-        if (fileProcessingService != null) {
-            fileProcessingService.process(args);
-        } else {
-            System.out.println("Failed to create FileProcessingService.");
-        }
+        fileProcessingService.process(args);
     }
 }

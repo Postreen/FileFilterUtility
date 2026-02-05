@@ -1,6 +1,7 @@
 package com.sazonov.utility.service;
 
-import com.sazonov.utility.commandline.CliParser;
+import com.sazonov.utility.commandline.ArgumentParser;
+import com.sazonov.utility.commandline.CliOptionsFactory;
 import com.sazonov.utility.config.Configuration;
 import com.sazonov.utility.manager.FileOutputManager;
 import com.sazonov.utility.processor.FileFilterProcessor;
@@ -12,62 +13,109 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
 public class FileProcessingService {
 
-    private final CliParser cliParser;
-    private final FileOutputManager outputManager;
-    private final StatsTracker statsTracker;
-    private final FileFilterProcessor processor;
-    private final StatsPresenter presenter;
+    private final ArgumentParser argumentParser;
 
     public void process(String[] args) {
         log.info("Starting FileFilterUtility");
 
-        Optional<Configuration> configOptional = cliParser.parse(args);
+        Optional<Configuration> configOptional = argumentParser.parse(args);
         if (configOptional.isEmpty()) {
+            log.error("Failed to parse CLI arguments.");
+            argumentParser.printHelp();
             return;
         }
 
         Configuration config = configOptional.get();
 
-        // Проверка наличия входных файлов
-        if (config.inputFiles().isEmpty()) {
+        if (config.inputFiles() == null || config.inputFiles().isEmpty()) {
             log.error("No input files provided.");
-            cliParser.printHelp();
+            argumentParser.printHelp();
             return;
         }
 
-        // Создание каталога для сохранения результатов
         if (!ensureOutputDirectory(config.outputDirectory())) {
-            log.error("Failed to create the output directory.");
+            log.error("Cannot continue: output directory is not available: {}", config.outputDirectory());
             return;
         }
 
-        // Обработка файлов
-        processFiles(config);
+        FileOutputManager outputManager = new FileOutputManager(config);
+        StatsTracker statsTracker = new StatsTracker();
+        FileFilterProcessor processor = new FileFilterProcessor(outputManager, statsTracker);
+        StatsPresenter presenter = new StatsPresenter(config.statisticsMode());
+
+        processFiles(config, processor, outputManager, statsTracker, presenter);
     }
 
     private boolean ensureOutputDirectory(Path outputDirectory) {
         try {
             Files.createDirectories(outputDirectory);
-            log.debug("Output directory created or already exists: {}", outputDirectory);
+            log.debug("Output directory ready: {}", outputDirectory);
             return true;
         } catch (IOException e) {
-            log.error("Failed to create output directory: {}", e.getMessage());
+            log.error("Failed to create output directory {}: {}", outputDirectory, e.getMessage());
             return false;
         }
     }
 
-    private void processFiles(Configuration config) {
+    private void processFiles(
+            Configuration config,
+            FileFilterProcessor processor,
+            FileOutputManager outputManager,
+            StatsTracker statsTracker,
+            StatsPresenter presenter
+    ) {
         log.info("Starting file processing...");
-        processor.process(config.inputFiles());
-        outputManager.closeAll();
-        log.info("File processing completed.");
 
+        List<Path> validFiles = config.inputFiles().stream()
+                .filter(this::isValidInputFile)
+                .toList();
+
+        if (validFiles.isEmpty()) {
+            log.error("Cannot continue: no readable input files were provided.");
+            return;
+        }
+
+        try {
+            processor.process(validFiles);
+        } catch (Exception e) {
+            // на всякий случай: чтобы программа не падала
+            log.error("Unexpected error during processing: {}", e.getMessage(), e);
+        } finally {
+            try {
+                outputManager.closeAll();
+            } catch (Exception e) {
+                log.error("Error while closing output files: {}", e.getMessage(), e);
+            }
+        }
+
+        log.info("File processing completed.");
         presenter.print(statsTracker);
+    }
+
+    private boolean isValidInputFile(Path inputFile) {
+        if (inputFile == null) {
+            log.error("Input file path is null.");
+            return false;
+        }
+        if (!Files.exists(inputFile)) {
+            log.error("Input file not found: {}", inputFile);
+            return false;
+        }
+        if (!Files.isRegularFile(inputFile)) {
+            log.error("Input path is not a file: {}", inputFile);
+            return false;
+        }
+        if (!Files.isReadable(inputFile)) {
+            log.error("Input file is not readable: {}", inputFile);
+            return false;
+        }
+        return true;
     }
 }
