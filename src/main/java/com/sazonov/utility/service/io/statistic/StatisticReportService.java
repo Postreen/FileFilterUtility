@@ -1,15 +1,15 @@
-package com.sazonov.utility.stats;
+package com.sazonov.utility.service.io.statistic;
 
 import com.sazonov.utility.model.StatisticsMode;
-import com.sazonov.utility.stats.tracker.StatsTracker;
-import com.sazonov.utility.stats.tracker.datastats.NumericStats;
-import com.sazonov.utility.stats.tracker.datastats.StringStats;
+import com.sazonov.utility.service.io.statistic.tracker.StatsTracker;
+import com.sazonov.utility.service.io.statistic.tracker.datastats.NumericStats;
+import com.sazonov.utility.service.io.statistic.tracker.datastats.StringStats;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-public class StatsPresenter {
+public class StatisticReportService {
     private final StatisticsMode statisticsMode;
 
     /**

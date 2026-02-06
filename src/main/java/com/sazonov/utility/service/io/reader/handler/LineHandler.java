@@ -1,8 +1,8 @@
-package com.sazonov.utility.processor;
+package com.sazonov.utility.service.io.reader.handler;
 
-import com.sazonov.utility.io.writer.OutputWriter;
 import com.sazonov.utility.model.DataType;
-import com.sazonov.utility.stats.tracker.StatsTracker;
+import com.sazonov.utility.service.io.writer.OutputWriterService;
+import com.sazonov.utility.service.io.statistic.tracker.StatsTracker;
 import com.sazonov.utility.utils.LineClassifier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 public class LineHandler {
-    private final OutputWriter outputWriter;
+    private final OutputWriterService outputWriterService;
     private final StatsTracker statsTracker;
 
     public void handle(String line) {
@@ -18,19 +18,19 @@ public class LineHandler {
         switch (type) {
             case INTEGER -> {
                 log.debug("Detected INTEGER: {}", line);
-                if (outputWriter.writeInteger(line)) {
+                if (outputWriterService.writeInteger(line)) {
                     statsTracker.recordInteger(line.trim());
                 }
             }
             case FLOAT -> {
                 log.debug("Detected FLOAT: {}", line);
-                if (outputWriter.writeFloat(line)) {
+                if (outputWriterService.writeFloat(line)) {
                     statsTracker.recordFloat(line.trim());
                 }
             }
             case STRING -> {
                 log.debug("Detected STRING: {}", line);
-                if (outputWriter.writeString(line)) {
+                if (outputWriterService.writeString(line)) {
                     statsTracker.recordString(line);
                 }
             }

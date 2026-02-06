@@ -1,15 +1,8 @@
 package com.sazonov.utility.service;
 
-import com.sazonov.utility.commandline.ArgumentParser;
+import com.sazonov.utility.commandline.CliParser;
 import com.sazonov.utility.config.Configuration;
-import com.sazonov.utility.io.FileReaderService;
-import com.sazonov.utility.io.writer.OutputWriter;
-import com.sazonov.utility.io.writer.OutputWriterFactory;
-import com.sazonov.utility.processor.FileFilterProcessor;
-import com.sazonov.utility.processor.LineHandler;
-import com.sazonov.utility.stats.StatsPresenter;
-import com.sazonov.utility.stats.StatsPresenterFactory;
-import com.sazonov.utility.stats.tracker.StatsTracker;
+import com.sazonov.utility.service.io.FileProcessorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,20 +14,17 @@ import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
-public class FileProcessingService {
-
-    private final ArgumentParser argumentParser;
-    private final FileReaderService fileReaderService;
-    private final OutputWriterFactory outputWriterFactory;
-    private final StatsPresenterFactory statsPresenterFactory;
+public class FileProcessingCoordinatorService {
 
     public void process(String[] args) {
         log.info("Starting FileFilterUtility");
 
-        Optional<Configuration> configOptional = argumentParser.parse(args);
+        CliParser cliParser = new CliParser();
+
+        Optional<Configuration> configOptional = cliParser.parse(args);
         if (configOptional.isEmpty()) {
             log.error("Failed to parse CLI arguments.");
-            argumentParser.printHelp();
+            cliParser.printHelp();
             return;
         }
 
@@ -42,7 +32,7 @@ public class FileProcessingService {
 
         if (config.inputFiles() == null || config.inputFiles().isEmpty()) {
             log.error("No input files provided.");
-            argumentParser.printHelp();
+            cliParser.printHelp();
             return;
         }
 
@@ -77,26 +67,9 @@ public class FileProcessingService {
             return;
         }
 
-        OutputWriter outputWriter = outputWriterFactory.create(config);
-        StatsTracker statsTracker = new StatsTracker();
-        LineHandler lineHandler = new LineHandler(outputWriter, statsTracker);
-        FileFilterProcessor processor = new FileFilterProcessor(fileReaderService, lineHandler);
-        StatsPresenter presenter = statsPresenterFactory.create(config.statisticsMode());
+        FileProcessorService fileProcessorService = new FileProcessorService();
 
-        try {
-            processor.process(validFiles);
-        } catch (Exception e) {
-            log.error("Unexpected error during processing: {}", e.getMessage(), e);
-        } finally {
-            try {
-                outputWriter.closeAll();
-            } catch (Exception e) {
-                log.error("Error while closing output files: {}", e.getMessage(), e);
-            }
-        }
-
-        log.info("File processing completed.");
-        presenter.print(statsTracker);
+        fileProcessorService.processFiles(validFiles, config);
     }
 
     private boolean isValidInputFile(Path inputFile) {

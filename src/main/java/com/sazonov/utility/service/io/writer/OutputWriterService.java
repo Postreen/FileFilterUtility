@@ -1,6 +1,6 @@
-package com.sazonov.utility.io.writer;
+package com.sazonov.utility.service.io.writer;
 
-public interface OutputWriter {
+public interface OutputWriterService {
     boolean writeInteger(String value);
 
     boolean writeFloat(String value);

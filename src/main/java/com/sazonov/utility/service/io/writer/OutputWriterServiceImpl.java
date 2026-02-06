@@ -1,7 +1,6 @@
-package com.sazonov.utility.manager;
+package com.sazonov.utility.service.io.writer;
 
 import com.sazonov.utility.config.Configuration;
-import com.sazonov.utility.io.writer.OutputWriter;
 import com.sazonov.utility.model.OutputType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,10 +16,9 @@ import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
-public final class FileOutputManager implements OutputWriter {
+public final class OutputWriterServiceImpl implements OutputWriterService {
     private final Configuration config;
     private final Map<OutputType, BufferedWriter> writers = new EnumMap<>(OutputType.class);
-    private final Map<OutputType, Boolean> failed = new EnumMap<>(OutputType.class);
 
     @Override
     public boolean writeInteger(String value) {

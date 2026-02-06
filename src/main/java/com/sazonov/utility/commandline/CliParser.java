@@ -14,11 +14,9 @@ import java.util.Locale;
 import java.util.Optional;
 
 @Slf4j
-@RequiredArgsConstructor
-public class CliParserImpl implements ArgumentParser{
-    private final Options options;
+public class CliParser {
+    private final Options options = CliOptionsFactory.createOptions();
 
-    @Override
     public Optional<Configuration> parse(String[] args) {
         Locale.setDefault(Locale.ROOT);
         CommandLineParser parser = new DefaultParser();
@@ -50,7 +48,6 @@ public class CliParserImpl implements ArgumentParser{
         }
     }
 
-    @Override
     public void printHelp() {
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp("java -jar <jar> [options] <files...>", options);

@@ -1,7 +1,7 @@
-package com.sazonov.utility.stats.tracker;
+package com.sazonov.utility.service.io.statistic.tracker;
 
-import com.sazonov.utility.stats.tracker.datastats.NumericStats;
-import com.sazonov.utility.stats.tracker.datastats.StringStats;
+import com.sazonov.utility.service.io.statistic.tracker.datastats.NumericStats;
+import com.sazonov.utility.service.io.statistic.tracker.datastats.StringStats;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
