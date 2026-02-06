@@ -1,34 +1,37 @@
 package com.sazonov.utility.service.io.statistic;
 
+import com.sazonov.utility.config.Configuration;
 import com.sazonov.utility.model.StatisticsMode;
-import com.sazonov.utility.service.io.statistic.tracker.StatsTracker;
+import com.sazonov.utility.service.io.statistic.tracker.StatisticTracker;
 import com.sazonov.utility.service.io.statistic.tracker.datastats.NumericStats;
 import com.sazonov.utility.service.io.statistic.tracker.datastats.StringStats;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 @Slf4j
+@Service
 @RequiredArgsConstructor
 public class StatisticReportService {
-    private final StatisticsMode statisticsMode;
+    private final Configuration configuration;
 
     /**
      * Печатает статистику
      */
-    public void print(StatsTracker statsTracker) {
-        if (statisticsMode == StatisticsMode.NONE) {
+    public void print(StatisticTracker statisticTracker) {
+        if (configuration.getStatisticsMode() == StatisticsMode.NONE) {
             log.info("Statistics are not printed because the mode is set to NONE.");
             return;
         }
 
-        if (statisticsMode == StatisticsMode.FULL) {
-            printFullStats("Integers", statsTracker.getIntegerStats());
-            printFullStats("Floats", statsTracker.getFloatStats());
-            printFullStringStats("Strings", statsTracker.getStringStats());
-        } else if (statisticsMode == StatisticsMode.SUMMARY) {
-            printSummaryStats("Integers", statsTracker.getIntegerStats());
-            printSummaryStats("Floats", statsTracker.getFloatStats());
-            printSummaryStringStats("Strings", statsTracker.getStringStats());
+        if (configuration.getStatisticsMode() == StatisticsMode.FULL) {
+            printFullStats("Integers", statisticTracker.getIntegerStats());
+            printFullStats("Floats", statisticTracker.getFloatStats());
+            printFullStringStats("Strings", statisticTracker.getStringStats());
+        } else if (configuration.getStatisticsMode() == StatisticsMode.SUMMARY) {
+            printSummaryStats("Integers", statisticTracker.getIntegerStats());
+            printSummaryStats("Floats", statisticTracker.getFloatStats());
+            printSummaryStringStats("Strings", statisticTracker.getStringStats());
         }
     }
 
@@ -37,13 +40,13 @@ public class StatisticReportService {
      */
     private void printFullStats(String label, NumericStats stats) {
         log.info("""
-                {}:
-                - Min: {}
-                - Max: {}
-                - Average: {}
-                - Sum: {}
-                - Count: {}
-                """,
+                        {}:
+                        - Min: {}
+                        - Max: {}
+                        - Average: {}
+                        - Sum: {}
+                        - Count: {}
+                        """,
                 label,
                 formatNullable(stats.getMin()),
                 formatNullable(stats.getMax()),
@@ -66,11 +69,11 @@ public class StatisticReportService {
      */
     private void printFullStringStats(String label, StringStats stats) {
         log.info("""
-                {}:
-                - Min length: {}
-                - Max length: {}
-                - Count: {}
-                """,
+                        {}:
+                        - Min length: {}
+                        - Max length: {}
+                        - Count: {}
+                        """,
                 label,
                 stats.getCount() == 0 ? "N/A" : stats.getMinLength(),
                 stats.getCount() == 0 ? "N/A" : stats.getMaxLength(),

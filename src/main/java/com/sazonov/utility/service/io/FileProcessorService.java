@@ -1,31 +1,29 @@
 package com.sazonov.utility.service.io;
 
-import com.sazonov.utility.config.Configuration;
 import com.sazonov.utility.service.io.reader.FileReaderService;
-import com.sazonov.utility.service.io.reader.FileReaderServiceImpl;
 import com.sazonov.utility.service.io.statistic.StatisticReportService;
-import com.sazonov.utility.service.io.statistic.tracker.StatsTracker;
+import com.sazonov.utility.service.io.statistic.tracker.StatisticTracker;
 import com.sazonov.utility.service.io.writer.OutputWriterService;
-import com.sazonov.utility.service.io.writer.OutputWriterServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
 import java.util.List;
 
 @Slf4j
+@Service
 @RequiredArgsConstructor
 public class FileProcessorService {
+    private final OutputWriterService outputWriterService;
+    private final FileReaderService fileReaderService;
+    private final StatisticReportService statisticReportService;
+    private final StatisticTracker statisticTracker;
 
-    public void processFiles(List<Path> inputFiles, Configuration config) {
-        StatsTracker statsTracker = new StatsTracker();
-
-        OutputWriterService outputWriterService = new OutputWriterServiceImpl(config);
-        FileReaderService fileReaderService = new FileReaderServiceImpl();
-        StatisticReportService statisticReportService = new StatisticReportService(config.statisticsMode());
+    public void processFiles(List<Path> inputFiles) {
 
         try {
-            fileReaderService.readLines(inputFiles, outputWriterService, statsTracker);
+            fileReaderService.readLines(inputFiles, outputWriterService, statisticTracker);
         } catch (Exception e) {
             log.error("Unexpected error during processing: {}", e.getMessage(), e);
         } finally {
@@ -37,6 +35,6 @@ public class FileProcessorService {
         }
 
         log.info("File processing completed.");
-        statisticReportService.print(statsTracker);
+        statisticReportService.print(statisticTracker);
     }
 }

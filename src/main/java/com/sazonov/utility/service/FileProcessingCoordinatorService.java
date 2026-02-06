@@ -5,6 +5,7 @@ import com.sazonov.utility.config.Configuration;
 import com.sazonov.utility.service.io.FileProcessorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,13 +14,15 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j
+@Service
 @RequiredArgsConstructor
 public class FileProcessingCoordinatorService {
+    private final FileProcessorService fileProcessorService;
+    private final CliParser cliParser;
+    private final Configuration configuration;
 
     public void process(String[] args) {
         log.info("Starting FileFilterUtility");
-
-        CliParser cliParser = new CliParser();
 
         Optional<Configuration> configOptional = cliParser.parse(args);
         if (configOptional.isEmpty()) {
@@ -28,20 +31,18 @@ public class FileProcessingCoordinatorService {
             return;
         }
 
-        Configuration config = configOptional.get();
-
-        if (config.inputFiles() == null || config.inputFiles().isEmpty()) {
+        if (configuration.getInputFiles() == null || configuration.getInputFiles().isEmpty()) {
             log.error("No input files provided.");
             cliParser.printHelp();
             return;
         }
 
-        if (!ensureOutputDirectory(config.outputDirectory())) {
-            log.error("Cannot continue: output directory is not available: {}", config.outputDirectory());
+        if (!ensureOutputDirectory(configuration.getOutputDirectory())) {
+            log.error("Cannot continue: output directory is not available: {}", configuration.getOutputDirectory());
             return;
         }
 
-        processFiles(config);
+        processFiles();
     }
 
     private boolean ensureOutputDirectory(Path outputDirectory) {
@@ -55,10 +56,10 @@ public class FileProcessingCoordinatorService {
         }
     }
 
-    private void processFiles(Configuration config) {
+    private void processFiles() {
         log.info("Starting file processing...");
 
-        List<Path> validFiles = config.inputFiles().stream()
+        List<Path> validFiles = configuration.getInputFiles().stream()
                 .filter(this::isValidInputFile)
                 .toList();
 
@@ -67,9 +68,7 @@ public class FileProcessingCoordinatorService {
             return;
         }
 
-        FileProcessorService fileProcessorService = new FileProcessorService();
-
-        fileProcessorService.processFiles(validFiles, config);
+        fileProcessorService.processFiles(validFiles);
     }
 
     private boolean isValidInputFile(Path inputFile) {

@@ -1,11 +1,13 @@
 package com.sazonov.utility.service.io.statistic.tracker.datastats;
 
 import lombok.Getter;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 
 @Getter
+@Component
 public final class NumericStats {
     private long count;
     private BigDecimal min;

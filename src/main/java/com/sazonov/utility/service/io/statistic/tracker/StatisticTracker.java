@@ -3,17 +3,21 @@ package com.sazonov.utility.service.io.statistic.tracker;
 import com.sazonov.utility.service.io.statistic.tracker.datastats.NumericStats;
 import com.sazonov.utility.service.io.statistic.tracker.datastats.StringStats;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
 @Slf4j
 @Getter
-public final class StatsTracker {
-    private final NumericStats integerStats = new NumericStats();
-    private final NumericStats floatStats = new NumericStats();
-    private final StringStats stringStats = new StringStats();
+@Component
+@RequiredArgsConstructor
+public final class StatisticTracker {
+    private final NumericStats integerStats;
+    private final NumericStats floatStats;
+    private final StringStats stringStats;
 
     /**
      * Метод для записи целых чисел

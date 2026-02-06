@@ -1,8 +1,10 @@
 package com.sazonov.utility.service.io.statistic.tracker.datastats;
 
 import lombok.Getter;
+import org.springframework.stereotype.Component;
 
 @Getter
+@Component
 public final class StringStats {
     private long count;
     private int minLength = Integer.MAX_VALUE;

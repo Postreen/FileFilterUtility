@@ -2,9 +2,11 @@ package com.sazonov.utility.commandline;
 
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
+import org.springframework.stereotype.Component;
 
+@Component
 public class CliOptionsFactory {
-    public static Options createOptions() {
+    public Options createOptions() {
         Options options = new Options();
 
         options.addOption(Option.builder("o")

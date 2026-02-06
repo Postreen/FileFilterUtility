@@ -4,6 +4,7 @@ import com.sazonov.utility.config.Configuration;
 import com.sazonov.utility.model.OutputType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -15,10 +16,11 @@ import java.util.EnumMap;
 import java.util.Map;
 
 @Slf4j
+@Service
 @RequiredArgsConstructor
 public final class OutputWriterServiceImpl implements OutputWriterService {
-    private final Configuration config;
     private final Map<OutputType, BufferedWriter> writers = new EnumMap<>(OutputType.class);
+    private final Configuration configuration;
 
     @Override
     public boolean writeInteger(String value) {
@@ -63,12 +65,12 @@ public final class OutputWriterServiceImpl implements OutputWriterService {
     }
 
     private BufferedWriter openWriter(OutputType type) {
-        Path outputPath = config.outputDirectory().resolve(config.prefix() + type.getFileName());
+        Path outputPath = configuration.getOutputDirectory().resolve(configuration.getPrefix() + type.getFileName());
 
         try {
             log.debug("Opening writer for {} at path: {}", type.getLabel(), outputPath);
 
-            StandardOpenOption[] options = config.append() ?
+            StandardOpenOption[] options = configuration.getAppend() ?
                     new StandardOpenOption[]{StandardOpenOption.CREATE, StandardOpenOption.APPEND} :
                     new StandardOpenOption[]{StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING};
 

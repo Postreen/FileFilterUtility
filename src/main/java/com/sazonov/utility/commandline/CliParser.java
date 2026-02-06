@@ -5,7 +5,9 @@ import com.sazonov.utility.model.StatisticsMode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -14,14 +16,18 @@ import java.util.Locale;
 import java.util.Optional;
 
 @Slf4j
+@Component
+@RequiredArgsConstructor
 public class CliParser {
-    private final Options options = CliOptionsFactory.createOptions();
+    private final CliOptionsFactory cliOptionsFactory;
+    private final Configuration configuration;
 
+    @PostConstruct
     public Optional<Configuration> parse(String[] args) {
         Locale.setDefault(Locale.ROOT);
         CommandLineParser parser = new DefaultParser();
         try {
-            CommandLine cmd = parser.parse(options, args);
+            CommandLine cmd = parser.parse(cliOptionsFactory.createOptions(), args);
             log.debug("Parsing completed successfully.");
 
             Path outputDirectory = Paths.get(cmd.getOptionValue("o", "."));
@@ -40,7 +46,9 @@ public class CliParser {
             for (String input : cmd.getArgList()) {
                 inputs.add(Paths.get(input));
             }
-            return Optional.of(new Configuration(outputDirectory, prefix, append, statisticsMode, inputs));
+            configuration.updateConfiguration(outputDirectory, prefix, append, statisticsMode, inputs);
+
+            return Optional.of(configuration);
         } catch (ParseException e) {
             log.warn("Failed to parse arguments: {}", e.getMessage());
             printHelp();
@@ -50,7 +58,7 @@ public class CliParser {
 
     public void printHelp() {
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("java -jar <jar> [options] <files...>", options);
+        formatter.printHelp("java -jar <jar> [options] <files...>", cliOptionsFactory.createOptions());
     }
 
     private StatisticsMode resolveStatisticsMode(CommandLine cmd) {
