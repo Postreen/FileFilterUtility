@@ -1,4 +1,4 @@
-package com.sazonov.utility.stats;
+package com.sazonov.utility.stats.tracker.datastats;
 
 import lombok.Getter;
 
@@ -8,8 +8,8 @@ import java.math.MathContext;
 @Getter
 public final class NumericStats {
     private long count;
-    private BigDecimal min = BigDecimal.valueOf(Double.MAX_VALUE);
-    private BigDecimal max = BigDecimal.valueOf(Double.MIN_VALUE);
+    private BigDecimal min;
+    private BigDecimal max;
     private BigDecimal sum = BigDecimal.ZERO;
 
     public void record(BigDecimal value) {

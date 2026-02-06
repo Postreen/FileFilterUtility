@@ -1,20 +1,16 @@
 <configuration>
 
-    <!-- Устанавливаем путь для логов -->
     <property name="LOG_DIR" value="logs"/>
 
-    <!-- Конфигурация для записи в консоль -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
-        <!-- Логи от INFO и выше будут выводиться в консоль -->
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>INFO</level>
         </filter>
     </appender>
 
-    <!-- Конфигурация для записи в файл -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_DIR}/application.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
@@ -28,7 +24,6 @@
         </encoder>
     </appender>
 
-    <!-- Настройка корневого логгера, чтобы логи всех уровней писались в файл, а от INFO и выше - в консоль -->
     <root level="DEBUG">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE"/>

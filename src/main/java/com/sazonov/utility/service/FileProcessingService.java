@@ -1,12 +1,15 @@
 package com.sazonov.utility.service;
 
 import com.sazonov.utility.commandline.ArgumentParser;
-import com.sazonov.utility.commandline.CliOptionsFactory;
 import com.sazonov.utility.config.Configuration;
-import com.sazonov.utility.manager.FileOutputManager;
+import com.sazonov.utility.io.FileReaderService;
+import com.sazonov.utility.io.writer.OutputWriter;
+import com.sazonov.utility.io.writer.OutputWriterFactory;
 import com.sazonov.utility.processor.FileFilterProcessor;
+import com.sazonov.utility.processor.LineHandler;
 import com.sazonov.utility.stats.StatsPresenter;
-import com.sazonov.utility.stats.StatsTracker;
+import com.sazonov.utility.stats.StatsPresenterFactory;
+import com.sazonov.utility.stats.tracker.StatsTracker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,6 +24,9 @@ import java.util.Optional;
 public class FileProcessingService {
 
     private final ArgumentParser argumentParser;
+    private final FileReaderService fileReaderService;
+    private final OutputWriterFactory outputWriterFactory;
+    private final StatsPresenterFactory statsPresenterFactory;
 
     public void process(String[] args) {
         log.info("Starting FileFilterUtility");
@@ -45,12 +51,7 @@ public class FileProcessingService {
             return;
         }
 
-        FileOutputManager outputManager = new FileOutputManager(config);
-        StatsTracker statsTracker = new StatsTracker();
-        FileFilterProcessor processor = new FileFilterProcessor(outputManager, statsTracker);
-        StatsPresenter presenter = new StatsPresenter(config.statisticsMode());
-
-        processFiles(config, processor, outputManager, statsTracker, presenter);
+        processFiles(config);
     }
 
     private boolean ensureOutputDirectory(Path outputDirectory) {
@@ -64,13 +65,7 @@ public class FileProcessingService {
         }
     }
 
-    private void processFiles(
-            Configuration config,
-            FileFilterProcessor processor,
-            FileOutputManager outputManager,
-            StatsTracker statsTracker,
-            StatsPresenter presenter
-    ) {
+    private void processFiles(Configuration config) {
         log.info("Starting file processing...");
 
         List<Path> validFiles = config.inputFiles().stream()
@@ -82,14 +77,19 @@ public class FileProcessingService {
             return;
         }
 
+        OutputWriter outputWriter = outputWriterFactory.create(config);
+        StatsTracker statsTracker = new StatsTracker();
+        LineHandler lineHandler = new LineHandler(outputWriter, statsTracker);
+        FileFilterProcessor processor = new FileFilterProcessor(fileReaderService, lineHandler);
+        StatsPresenter presenter = statsPresenterFactory.create(config.statisticsMode());
+
         try {
             processor.process(validFiles);
         } catch (Exception e) {
-            // на всякий случай: чтобы программа не падала
             log.error("Unexpected error during processing: {}", e.getMessage(), e);
         } finally {
             try {
-                outputManager.closeAll();
+                outputWriter.closeAll();
             } catch (Exception e) {
                 log.error("Error while closing output files: {}", e.getMessage(), e);
             }

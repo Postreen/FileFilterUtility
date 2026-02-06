@@ -1,6 +1,9 @@
 package com.sazonov.utility.stats;
 
 import com.sazonov.utility.model.StatisticsMode;
+import com.sazonov.utility.stats.tracker.StatsTracker;
+import com.sazonov.utility.stats.tracker.datastats.NumericStats;
+import com.sazonov.utility.stats.tracker.datastats.StringStats;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -9,6 +12,9 @@ import lombok.extern.slf4j.Slf4j;
 public class StatsPresenter {
     private final StatisticsMode statisticsMode;
 
+    /**
+     * Печатает статистику
+     */
     public void print(StatsTracker statsTracker) {
         if (statisticsMode == StatisticsMode.NONE) {
             log.info("Statistics are not printed because the mode is set to NONE.");
@@ -37,7 +43,14 @@ public class StatsPresenter {
                 - Average: {}
                 - Sum: {}
                 - Count: {}
-                """, label, stats.getMin(), stats.getMax(), stats.average(), stats.getSum(), stats.getCount());
+                """,
+                label,
+                formatNullable(stats.getMin()),
+                formatNullable(stats.getMax()),
+                stats.average(),
+                stats.getSum(),
+                stats.getCount()
+        );
     }
 
     /**
@@ -57,7 +70,12 @@ public class StatsPresenter {
                 - Min length: {}
                 - Max length: {}
                 - Count: {}
-                """, label, stats.getMinLength(), stats.getMaxLength(), stats.getCount());
+                """,
+                label,
+                stats.getCount() == 0 ? "N/A" : stats.getMinLength(),
+                stats.getCount() == 0 ? "N/A" : stats.getMaxLength(),
+                stats.getCount()
+        );
     }
 
     /**
@@ -66,5 +84,9 @@ public class StatsPresenter {
     private void printSummaryStringStats(String label, StringStats stats) {
         log.info("{}:", label);
         log.info("- Count: {}", stats.getCount());
+    }
+
+    private String formatNullable(Object value) {
+        return value == null ? "N/A" : value.toString();
     }
 }

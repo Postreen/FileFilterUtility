@@ -1,6 +1,5 @@
 package com.sazonov.utility.commandline;
 
-
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 

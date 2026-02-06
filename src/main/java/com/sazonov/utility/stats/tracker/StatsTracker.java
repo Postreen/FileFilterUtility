@@ -1,10 +1,14 @@
-package com.sazonov.utility.stats;
+package com.sazonov.utility.stats.tracker;
 
+import com.sazonov.utility.stats.tracker.datastats.NumericStats;
+import com.sazonov.utility.stats.tracker.datastats.StringStats;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+@Slf4j
 @Getter
 public final class StatsTracker {
     private final NumericStats integerStats = new NumericStats();
@@ -19,7 +23,7 @@ public final class StatsTracker {
             BigInteger parsed = new BigInteger(value);
             integerStats.record(new BigDecimal(parsed));
         } catch (NumberFormatException e) {
-            System.err.println(e);
+            log.warn("Failed to parse integer value '{}': {}", value, e.getMessage());
         }
     }
 
@@ -31,7 +35,7 @@ public final class StatsTracker {
             BigDecimal parsed = new BigDecimal(value);
             floatStats.record(parsed);
         } catch (NumberFormatException e) {
-            System.err.println(e);
+            log.warn("Failed to parse float value '{}': {}", value, e.getMessage());
         }
     }
 

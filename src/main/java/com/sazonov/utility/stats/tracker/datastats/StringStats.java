@@ -1,4 +1,4 @@
-package com.sazonov.utility.stats;
+package com.sazonov.utility.stats.tracker.datastats;
 
 import lombok.Getter;
 
