@@ -1,6 +1,7 @@
 package com.sazonov.utility.service.io.statistic.tracker.datastats;
 
 import lombok.Getter;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -8,6 +9,7 @@ import java.math.MathContext;
 
 @Getter
 @Component
+@Scope("prototype")
 public final class NumericStats {
     private long count;
     private BigDecimal min;
