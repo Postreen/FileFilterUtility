@@ -39,7 +39,7 @@ public final class OutputWriterServiceImpl implements OutputWriterService {
 
     @Override
     public void closeAll() {
-        log.info("Closing all writers.");
+        log.debug("Closing all writers.");
         for (BufferedWriter writer : writers.values()) {
             close(writer);
         }
@@ -59,14 +59,13 @@ public final class OutputWriterServiceImpl implements OutputWriterService {
             writer.newLine();
             return true;
         } catch (IOException e) {
-            log.error("Failed to write {} value: {}", type.getLabel(), e.getMessage());
+            log.error("Failed to write to output file: {}. Error: {}", buildOutputPath(type), e.getMessage());
             return false;
         }
     }
 
     private BufferedWriter openWriter(OutputType type) {
-        Path outputPath = configuration.getOutputDirectory().resolve(configuration.getPrefix() + type.getFileName());
-
+        Path outputPath = buildOutputPath(type);
         try {
             log.debug("Opening writer for {} at path: {}", type.getLabel(), outputPath);
 
@@ -74,11 +73,20 @@ public final class OutputWriterServiceImpl implements OutputWriterService {
                     new StandardOpenOption[]{StandardOpenOption.CREATE, StandardOpenOption.APPEND} :
                     new StandardOpenOption[]{StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING};
 
+            if (configuration.getAppend() && Files.exists(outputPath) && !Files.isWritable(outputPath)) {
+                log.error("Permission denied for appending to file: {}", outputPath);
+                return null;
+            }
+
             return Files.newBufferedWriter(outputPath, StandardCharsets.UTF_8, options);
         } catch (IOException e) {
             log.error("Failed to open output file {}: {}", outputPath, e.getMessage());
             return null;
         }
+    }
+
+    private Path buildOutputPath(OutputType type) {
+        return configuration.getOutputDirectory().resolve(configuration.getPrefix() + type.getFileName());
     }
 
     private void close(BufferedWriter writer) {

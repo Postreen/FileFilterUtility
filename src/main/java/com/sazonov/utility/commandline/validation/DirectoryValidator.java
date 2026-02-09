@@ -19,7 +19,6 @@ public class DirectoryValidator {
         Path directory;
         try {
             directory = Paths.get(outputDirectory);
-
             if (!Files.exists(directory)) {
                 return createDirectory(directory);
             }
