@@ -29,4 +29,7 @@
         <appender-ref ref="FILE"/>
     </root>
 
+    <logger name="org.springframework" level="INFO"/>
+    <logger name="com.sazonov.utility" level="DEBUG"/>
+
 </configuration>

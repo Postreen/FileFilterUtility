@@ -19,8 +19,13 @@ public class Configuration {
     private StatisticsMode statisticsMode;
     private List<Path> inputFiles;
 
-
-    public void updateConfiguration(Path outputDirectory, String prefix, Boolean append, StatisticsMode statisticsMode, List<Path> inputFiles) {
+    public void updateConfiguration(
+            Path outputDirectory,
+            String prefix,
+            Boolean append,
+            StatisticsMode statisticsMode,
+            List<Path> inputFiles
+    ) {
         this.outputDirectory = outputDirectory;
         this.prefix = prefix;
         this.append = append;

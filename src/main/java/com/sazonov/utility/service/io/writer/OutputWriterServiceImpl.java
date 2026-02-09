@@ -86,7 +86,6 @@ public final class OutputWriterServiceImpl implements OutputWriterService {
             log.debug("Writer is already closed.");
             return;
         }
-
         try {
             writer.close();
         } catch (IOException e) {

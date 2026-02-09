@@ -27,11 +27,11 @@ public class StatisticReportService {
         if (configuration.getStatisticsMode() == StatisticsMode.FULL) {
             printFullStats("Integers", statisticTracker.getIntegerStats());
             printFullStats("Floats", statisticTracker.getFloatStats());
-            printFullStringStats("Strings", statisticTracker.getStringStats());
+            printFullStringStats(statisticTracker.getStringStats());
         } else if (configuration.getStatisticsMode() == StatisticsMode.SUMMARY) {
             printSummaryStats("Integers", statisticTracker.getIntegerStats());
             printSummaryStats("Floats", statisticTracker.getFloatStats());
-            printSummaryStringStats("Strings", statisticTracker.getStringStats());
+            printSummaryStringStats(statisticTracker.getStringStats());
         }
     }
 
@@ -67,14 +67,14 @@ public class StatisticReportService {
     /**
      * Полная статистика для строк
      */
-    private void printFullStringStats(String label, StringStats stats) {
+    private void printFullStringStats(StringStats stats) {
         log.info("""
                         {}:
                         - Min length: {}
                         - Max length: {}
                         - Count: {}
                         """,
-                label,
+                "Strings",
                 stats.getCount() == 0 ? "N/A" : stats.getMinLength(),
                 stats.getCount() == 0 ? "N/A" : stats.getMaxLength(),
                 stats.getCount()
@@ -84,8 +84,8 @@ public class StatisticReportService {
     /**
      * Краткая статистика для строк
      */
-    private void printSummaryStringStats(String label, StringStats stats) {
-        log.info("{}:", label);
+    private void printSummaryStringStats(StringStats stats) {
+        log.info("{}:", "Strings");
         log.info("- Count: {}", stats.getCount());
     }
 

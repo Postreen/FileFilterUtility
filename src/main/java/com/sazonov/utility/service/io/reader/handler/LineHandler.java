@@ -1,9 +1,8 @@
 package com.sazonov.utility.service.io.reader.handler;
 
-import com.sazonov.utility.config.Configuration;
 import com.sazonov.utility.model.DataType;
-import com.sazonov.utility.service.io.writer.OutputWriterService;
 import com.sazonov.utility.service.io.statistic.tracker.StatisticTracker;
+import com.sazonov.utility.service.io.writer.OutputWriterService;
 import com.sazonov.utility.utils.LineClassifier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

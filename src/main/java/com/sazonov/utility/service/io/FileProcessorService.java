@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -20,21 +21,33 @@ public class FileProcessorService {
     private final StatisticReportService statisticReportService;
     private final StatisticTracker statisticTracker;
 
-    public void processFiles(List<Path> inputFiles) {
+    public void processFiles(List<Path> inputFiles) throws Exception {
+        boolean hasError = false;
 
         try {
             fileReaderService.readLines(inputFiles, outputWriterService, statisticTracker);
+        } catch (IOException e) {
+            log.error("Error during file reading process: {}", e.getMessage(), e);
+            hasError = true;
+        } catch (RuntimeException e) {
+            log.error("All files failed to be processed: {}", e.getMessage(), e);
+            hasError = true;
         } catch (Exception e) {
-            log.error("Unexpected error during processing: {}", e.getMessage(), e);
+            log.error("Unexpected error during file processing: {}", e.getMessage(), e);
+            hasError = true;
         } finally {
             try {
                 outputWriterService.closeAll();
             } catch (Exception e) {
                 log.error("Error while closing output files: {}", e.getMessage(), e);
+                throw new IOException("Failed to close output files.", e);
             }
         }
 
-        log.info("File processing completed.");
-        statisticReportService.print(statisticTracker);
+        if (hasError) {
+            log.warn("File processing completed with errors.");
+        } else {
+            statisticReportService.print(statisticTracker);
+        }
     }
 }

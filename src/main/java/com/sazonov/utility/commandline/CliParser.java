@@ -1,19 +1,21 @@
 package com.sazonov.utility.commandline;
 
+import com.sazonov.utility.commandline.validation.DirectoryValidator;
+import com.sazonov.utility.commandline.validation.FileValidator;
 import com.sazonov.utility.config.Configuration;
 import com.sazonov.utility.model.StatisticsMode;
+import com.sazonov.utility.utils.HelpPrinter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.cli.*;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.ParseException;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 
 @Slf4j
 @Component
@@ -21,45 +23,34 @@ import java.util.Optional;
 public class CliParser {
     private final CliOptionsFactory cliOptionsFactory;
     private final Configuration configuration;
+    private final DirectoryValidator directoryValidator;
+    private final FileValidator fileValidator;
 
-    @PostConstruct
-    public Optional<Configuration> parse(String[] args) {
+    public void parse(String[] args) throws ParseException {
         Locale.setDefault(Locale.ROOT);
         CommandLineParser parser = new DefaultParser();
+
         try {
             CommandLine cmd = parser.parse(cliOptionsFactory.createOptions(), args);
-            log.debug("Parsing completed successfully.");
 
-            Path outputDirectory = Paths.get(cmd.getOptionValue("o", "."));
-            log.debug("Output directory: {}", outputDirectory);
+            Path outputDirectory = directoryValidator.ensureOutputDirectory(cmd.getOptionValue("o", "."));
 
             String prefix = cmd.getOptionValue("p", "");
-            log.debug("Output prefix: {}", prefix);
-
             boolean append = cmd.hasOption("a");
-            log.debug("Append option: {}", append);
-
             StatisticsMode statisticsMode = resolveStatisticsMode(cmd);
-            log.info("Statistics mode: {}", statisticsMode);
 
-            List<Path> inputs = new ArrayList<>();
-            for (String input : cmd.getArgList()) {
-                inputs.add(Paths.get(input));
-            }
+            List<Path> inputs = fileValidator.validateAndFilterFiles(cmd.getArgList());
+
             configuration.updateConfiguration(outputDirectory, prefix, append, statisticsMode, inputs);
 
-            return Optional.of(configuration);
-        } catch (ParseException e) {
-            log.warn("Failed to parse arguments: {}", e.getMessage());
-            printHelp();
-            return Optional.empty();
+            logConfigurationDetails(configuration);
+
+        } catch (Exception e) {
+            HelpPrinter.printHelp(cliOptionsFactory.createOptions());
+            throw e;
         }
     }
 
-    public void printHelp() {
-        HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("java -jar <jar> [options] <files...>", cliOptionsFactory.createOptions());
-    }
 
     private StatisticsMode resolveStatisticsMode(CommandLine cmd) {
         if (cmd.hasOption("f")) {
@@ -72,5 +63,22 @@ public class CliParser {
             log.info("No statistics mode selected.");
             return StatisticsMode.NONE;
         }
+    }
+
+    private void logConfigurationDetails(Configuration configuration) {
+        log.info("""
+                        Configuration details:
+                        - Output directory: {}
+                        - Output prefix: {}
+                        - Append option: {}
+                        - Statistics mode: {}
+                        - Input files: {}
+                        """,
+                configuration.getOutputDirectory(),
+                configuration.getPrefix(),
+                configuration.getAppend(),
+                configuration.getStatisticsMode(),
+                configuration.getInputFiles()
+        );
     }
 }

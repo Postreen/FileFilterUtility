@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.charset.MalformedInputException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,43 +22,36 @@ public class FileReaderServiceImpl implements FileReaderService {
     private final LineHandler lineHandler;
 
     @Override
-    public void readLines(List<Path> inputFiles,
-                          OutputWriterService outputWriterService,
-                          StatisticTracker statisticTracker
+    public void readLines(
+            List<Path> inputFiles,
+            OutputWriterService outputWriterService,
+            StatisticTracker statisticTracker
     ) {
+        int failedFilesCount = 0;
 
         for (Path inputFile : inputFiles) {
-            if (!isReadableFile(inputFile)) {
-                continue;
-            }
             try (BufferedReader reader = Files.newBufferedReader(inputFile, StandardCharsets.UTF_8)) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     lineHandler.handle(line);
                 }
+            } catch (MalformedInputException e) {
+                log.warn("File {} has incorrect encoding.", inputFile);
+                failedFilesCount++;
+            } catch (SecurityException e) {
+                log.warn("No permission to access the file {}.", inputFile);
+                failedFilesCount++;
             } catch (IOException e) {
-                log.error("Failed to read file {}: {}", inputFile, e.getMessage());
+                log.warn("Failed to read file {}: {}", inputFile, e.getMessage());
+                failedFilesCount++;
+            } catch (Exception e) {
+                log.warn("Unexpected error while reading file {}: {}", inputFile, e.getMessage());
+                failedFilesCount++;
             }
         }
-    }
 
-    private boolean isReadableFile(Path inputFile) {
-        if (inputFile == null) {
-            log.error("Input file path is null.");
-            return false;
+        if (failedFilesCount == inputFiles.size()) {
+            throw new RuntimeException("All files failed to be processed.");
         }
-        if (!Files.exists(inputFile)) {
-            log.error("Input file not found: {}", inputFile);
-            return false;
-        }
-        if (!Files.isRegularFile(inputFile)) {
-            log.error("Input path is not a file: {}", inputFile);
-            return false;
-        }
-        if (!Files.isReadable(inputFile)) {
-            log.error("Input file is not readable: {}", inputFile);
-            return false;
-        }
-        return true;
     }
 }
