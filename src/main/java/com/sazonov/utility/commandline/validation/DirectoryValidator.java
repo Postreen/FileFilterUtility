@@ -12,9 +12,6 @@ import java.nio.file.Paths;
 @Component
 public class DirectoryValidator {
 
-    /**
-     * Основной метод, который проверяет и создает директорию
-     */
     public Path ensureOutputDirectory(String outputDirectory) {
         Path directory;
         try {
@@ -29,9 +26,6 @@ public class DirectoryValidator {
         return directory;
     }
 
-    /**
-     * Метод для создания директории по указанному пути
-     */
     private Path createDirectory(Path directory) {
         try {
             Files.createDirectories(directory);
@@ -42,9 +36,6 @@ public class DirectoryValidator {
         }
     }
 
-    /**
-     * Метод для создания fallback директории в корне проекта
-     */
     private Path createFallbackDirectory() {
         Path fallbackDirectory = getFallbackDirectory();
         try {
@@ -59,9 +50,6 @@ public class DirectoryValidator {
         }
     }
 
-    /**
-     * Метод для получения fallback директории в корне проекта
-     */
     private Path getFallbackDirectory() {
         Path projectRoot = Paths.get(System.getProperty("user.dir"));
         log.debug("Using fallback directory: {}", projectRoot);
