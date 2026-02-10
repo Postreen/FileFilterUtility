@@ -3,6 +3,7 @@ package com.sazonov.utility.config;
 import com.sazonov.utility.model.StatisticsMode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
@@ -10,6 +11,7 @@ import java.util.List;
 
 @Component
 @Getter
+@ToString
 @RequiredArgsConstructor
 public class Configuration {
 

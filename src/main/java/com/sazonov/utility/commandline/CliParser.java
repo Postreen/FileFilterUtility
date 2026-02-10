@@ -1,8 +1,6 @@
 package com.sazonov.utility.commandline;
 
-import com.sazonov.utility.commandline.validation.DirectoryValidator;
-import com.sazonov.utility.commandline.validation.FileValidator;
-import com.sazonov.utility.commandline.validation.PrefixValidator;
+import com.sazonov.utility.commandline.validation.*;
 import com.sazonov.utility.config.Configuration;
 import com.sazonov.utility.model.StatisticsMode;
 import com.sazonov.utility.utils.HelpPrinter;
@@ -11,11 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
-import java.util.regex.Pattern;
 
 @Slf4j
 @Component
@@ -26,24 +22,27 @@ public class CliParser {
     private final DirectoryValidator directoryValidator;
     private final FileValidator fileValidator;
     private final PrefixValidator prefixValidator;
+    private final CliOptionsValidator cliOptionsValidator;
+    private final StatisticsModeResolver statisticsModeResolver;
 
     public void parse(String[] args) throws ParseException {
         Locale.setDefault(Locale.ROOT);
         CommandLineParser parser = new DefaultParser();
-
+        Options options = cliOptionsFactory.createOptions();
+        String[] sanitizedArgs = cliOptionsValidator.filterUnknownOptions(args, options);
 
         try {
-            CommandLine cmd = parser.parse(cliOptionsFactory.createOptions(), args);
+            CommandLine cmd = parser.parse(options, sanitizedArgs);
 
             Path outputDirectory = directoryValidator.ensureOutputDirectory(cmd.getOptionValue("o", "."));
 
             String prefix = cmd.getOptionValue("p", "");
             if (cmd.hasOption("p")) {
-                prefixValidator.validatePrefix(prefix);  // Валидация префикса через PrefixValidator
+                prefixValidator.validatePrefix(prefix);
             }
 
             boolean append = cmd.hasOption("a");
-            StatisticsMode statisticsMode = resolveStatisticsMode(cmd);
+            StatisticsMode statisticsMode = statisticsModeResolver.resolveStatisticsMode(cmd);
 
             List<Path> inputs = fileValidator.validateAndFilterFiles(cmd.getArgList());
 
@@ -68,37 +67,7 @@ public class CliParser {
         }
     }
 
-    private StatisticsMode resolveStatisticsMode(CommandLine cmd) {
-        if (cmd.hasOption("s") && cmd.hasOption("f")) {
-            log.error("Invalid combination of statistics options: both -s and -f cannot be selected simultaneously.");
-            throw new IllegalArgumentException("Invalid combination of statistics options.");
-        }
-        if (cmd.hasOption("f")) {
-            log.info("Full statistics requested.");
-            return StatisticsMode.FULL;
-        } else if (cmd.hasOption("s")) {
-            log.info("Summary statistics requested.");
-            return StatisticsMode.SUMMARY;
-        } else {
-            log.debug("No statistics mode selected.");
-            return StatisticsMode.NONE;
-        }
-    }
-
     private void logConfigurationDetails(Configuration configuration) {
-        log.debug("""
-                        Configuration details:
-                        - Output directory: {}
-                        - Output prefix: {}
-                        - Append option: {}
-                        - Statistics mode: {}
-                        - Input files: {}
-                        """,
-                configuration.getOutputDirectory(),
-                configuration.getPrefix(),
-                configuration.getAppend(),
-                configuration.getStatisticsMode(),
-                configuration.getInputFiles()
-        );
+        log.debug("Configuration details: {}", configuration);
     }
 }
