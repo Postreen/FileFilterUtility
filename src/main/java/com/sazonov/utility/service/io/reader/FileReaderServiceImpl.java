@@ -1,8 +1,6 @@
 package com.sazonov.utility.service.io.reader;
 
 import com.sazonov.utility.service.io.reader.handler.LineHandler;
-import com.sazonov.utility.service.io.statistic.tracker.StatisticTracker;
-import com.sazonov.utility.service.io.writer.OutputWriterService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,11 +20,7 @@ public class FileReaderServiceImpl implements FileReaderService {
     private final LineHandler lineHandler;
 
     @Override
-    public void readLines(
-            List<Path> inputFiles,
-            OutputWriterService outputWriterService,
-            StatisticTracker statisticTracker
-    ) {
+    public void readLines(List<Path> inputFiles) {
         int failedFilesCount = 0;
 
         for (Path inputFile : inputFiles) {

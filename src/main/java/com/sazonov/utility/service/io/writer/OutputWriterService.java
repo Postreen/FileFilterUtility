@@ -1,7 +1,5 @@
 package com.sazonov.utility.service.io.writer;
 
-import com.sazonov.utility.config.Configuration;
-
 public interface OutputWriterService {
     boolean writeInteger(String value);
 

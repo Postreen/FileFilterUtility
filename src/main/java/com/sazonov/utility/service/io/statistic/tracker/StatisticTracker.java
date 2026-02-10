@@ -14,14 +14,11 @@ import java.math.BigInteger;
 @Getter
 @Component
 @RequiredArgsConstructor
-public final class StatisticTracker {
+public final class StatisticTracker implements StatisticProvider {
     private final NumericStats integerStats;
     private final NumericStats floatStats;
     private final StringStats stringStats;
 
-    /**
-     * Метод для записи целых чисел
-     */
     public void recordInteger(String value) {
         try {
             BigInteger parsed = new BigInteger(value);
@@ -31,9 +28,6 @@ public final class StatisticTracker {
         }
     }
 
-    /**
-     * Метод для записи чисел с плавающей точкой
-     */
     public void recordFloat(String value) {
         try {
             BigDecimal parsed = new BigDecimal(value);
@@ -43,9 +37,6 @@ public final class StatisticTracker {
         }
     }
 
-    /**
-     * Метод для записи строк
-     */
     public void recordString(String value) {
         stringStats.record(value);
     }

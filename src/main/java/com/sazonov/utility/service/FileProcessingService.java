@@ -4,6 +4,7 @@ import com.sazonov.utility.commandline.CliParser;
 import com.sazonov.utility.config.Configuration;
 import com.sazonov.utility.service.io.reader.FileReaderService;
 import com.sazonov.utility.service.io.statistic.StatisticReportService;
+import com.sazonov.utility.service.io.statistic.StatisticReportServiceImpl;
 import com.sazonov.utility.service.io.statistic.tracker.StatisticTracker;
 import com.sazonov.utility.service.io.writer.OutputWriterService;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,6 @@ public class FileProcessingService {
     private final FileReaderService fileReaderService;
     private final OutputWriterService outputWriterService;
     private final StatisticReportService statisticReportService;
-    private final StatisticTracker statisticTracker;
 
     public void process(String[] args) {
         log.info("Start file processing.");
@@ -33,7 +33,7 @@ public class FileProcessingService {
             List<Path> inputFiles = configuration.getInputFiles();
 
             if (processFiles(inputFiles)) {
-                statisticReportService.print(statisticTracker);
+                statisticReportService.print();
             }
 
             log.info("File processing completed.");
@@ -55,7 +55,7 @@ public class FileProcessingService {
         boolean success = true;
 
         try {
-            fileReaderService.readLines(inputFiles, outputWriterService, statisticTracker);
+            fileReaderService.readLines(inputFiles);
         } catch (IOException e) {
             log.error("Error during file reading process: {}", e.getMessage());
             success = false;
