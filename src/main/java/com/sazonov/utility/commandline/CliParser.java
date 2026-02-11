@@ -21,7 +21,6 @@ public class CliParser {
     private final Configuration configuration;
     private final DirectoryValidator directoryValidator;
     private final FileValidator fileValidator;
-    private final PrefixValidator prefixValidator;
     private final CliOptionsValidator cliOptionsValidator;
     private final StatisticsModeResolver statisticsModeResolver;
 
@@ -30,6 +29,7 @@ public class CliParser {
         CommandLineParser parser = new DefaultParser();
         Options options = cliOptionsFactory.createOptions();
         String[] sanitizedArgs = cliOptionsValidator.filterUnknownOptions(args, options);
+        log.info("Parsed arguments: {}", (Object) sanitizedArgs);
 
         try {
             CommandLine cmd = parser.parse(options, sanitizedArgs);
@@ -37,9 +37,6 @@ public class CliParser {
             Path outputDirectory = directoryValidator.ensureOutputDirectory(cmd.getOptionValue("o", "."));
 
             String prefix = cmd.getOptionValue("p", "");
-            if (cmd.hasOption("p")) {
-                prefixValidator.validatePrefix(prefix);
-            }
 
             boolean append = cmd.hasOption("a");
             StatisticsMode statisticsMode = statisticsModeResolver.resolveStatisticsMode(cmd);

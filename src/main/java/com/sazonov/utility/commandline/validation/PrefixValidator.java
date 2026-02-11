@@ -12,10 +12,12 @@ public class PrefixValidator {
 
     private static final Pattern PREFIX_PATTERN = Pattern.compile("^[A-Za-z0-9._-]+$");
 
-    public void validatePrefix(String prefix) {
+    public boolean validatePrefix(String prefix) {
         if (prefix == null || prefix.isBlank() || !isPrefixValid(prefix)) {
-            log.error("Invalid prefix specified: {}. Prefix cannot be empty or contain invalid characters.", prefix);
-            throw new IllegalArgumentException("Invalid prefix specified: " + prefix);
+            log.warn("Invalid prefix specified: {}. Prefix cannot be empty or contain invalid characters.", prefix);
+            return false;
+        } else {
+            return true;
         }
     }
 
