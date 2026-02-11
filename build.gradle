@@ -27,6 +27,7 @@ ext {
     commonsCliVersion = '1.9.0'
     logbackVersion = '1.5.27'
     springContext = '7.0.3'
+    mockitoVersion = '5.12.0'
 }
 
 dependencies {
@@ -42,8 +43,31 @@ dependencies {
 
     testImplementation platform("org.junit:junit-bom:${junitVersion}")
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+    testImplementation "org.mockito:mockito-junit-jupiter:${mockitoVersion}"
 }
 
 test {
     useJUnitPlatform()
 }
+
+tasks.register('fatJar', Jar) {
+    group = 'build'
+    description = 'Assembles a fat JAR including all dependencies.'
+
+    archiveBaseName.set('FileFilterUtility')
+    archiveVersion.set('1.0')
+
+    manifest {
+        attributes 'Main-Class': application.mainClass.get()
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from(sourceSets.main.output)
+
+    dependsOn(configurations.runtimeClasspath)
+    from {
+        configurations.runtimeClasspath.filter { it.name.endsWith('jar') }.collect { zipTree(it) }
+    }
+}
+
